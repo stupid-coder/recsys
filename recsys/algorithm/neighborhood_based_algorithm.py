@@ -45,7 +45,9 @@ class NeighborhoodBasedAlgorithm(Algorithm):
         self._mean_center_rating = self._rating - self._mean
         self._z = self.mean_center_rating / self._sigma
         similaritor = SimilaritorFactory(self.config.sim_config)
+        start = time.clock()
         self._sim = similaritor(ratings=self._rating)
+        print("__fit__ sim time:{}".format(time.clock()-start))
         print("__fit__ end")
 
     def __predict__(self):
