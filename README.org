@@ -1,0 +1,25 @@
+#+TITLE:  推荐系统
+#+AUTHOR: stupid-coder
+
+* learning recsys
+  
+
+* rec algorithm
+
+  
+** TODO roadmap
+  - [ ] dataset
+    - [ ] movilen
+      - [ ] rating metric
+      - [ ] title id
+  - [ ] metric tool
+    - [ ] auc
+  - [ ] recommendation algorithm
+    - [ ] CF
+      - [ ] user-based neighborhood models
+      - [ ] item-based neighborhood models
+    - [ ] content-based
+    - [ ] context-based
+
+
+
