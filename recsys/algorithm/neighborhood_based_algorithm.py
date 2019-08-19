@@ -33,7 +33,7 @@ class NeighborhoodBasedAlgorithm(Algorithm):
     def __init__(self, name, config):
         super().__init__(name, config)
 
-    def __fit__(self, rating, cache=None):
+    def __fit__(self, rating):
         print("__fit__ start")
         # rating 数据集
         if isinstance(rating, ma.MaskedArray):
@@ -45,15 +45,7 @@ class NeighborhoodBasedAlgorithm(Algorithm):
         self._mean_center_rating = self._rating - self._mean
         self._z = self.mean_center_rating / self._sigma
         similaritor = SimilaritorFactory(self.config.sim_config)
-        if cache != None:
-            fname = os.path.join(cache, "{}_sim.npy".format(self._name))
-            if os.path.exits(fname):
-                self._sim = np.load(open(fname, "rb"))
-            else:
-                self._sim = similaritor(ratings=self._rating)
-                np.save(open(fname, "wb"), self._sim)
-        else:
-            self._sim = similaritor(ratings=self._rating)
+        self._sim = similaritor(ratings=self._rating)
         print("__fit__ end")
 
     def __predict__(self):

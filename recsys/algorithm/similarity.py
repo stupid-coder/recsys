@@ -1,23 +1,35 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
-
 import math
+import os
 
 import numpy as np
 import numpy.ma as ma
 
 
 def person(ratings, **unused_kwargs):
-    return ma.corrcoef(ratings)
+    cache_name = os.path.join("recsys/algorithm/cache", "person.npy")
+    if os.path.exits(cache_name):
+        return np.load(open(cache_name, "rb"))
+    else:
+        sim = ma.corrcoef(ratings)
+        np.save(open(cache_name, "wb"), sim)
+        return sim
 
 def discounted_person(beta):
     def _sim(ratings, **unused_kwargs):
-        p = person(ratings)
-        count = np.zeros(ratings.shape)
-        count[~ratings.mask] = 1
-        count = np.dot(count, count.T)
-        weight = np.fmin(count, beta) / beta
-        return p * weight
+        cache_name = os.path.join("recsys/algorithm/cache", "discounted_person.{}.npy".format(beta))
+        if os.path.exists(cache_name):
+            return np.load(open(cache_name, "rb"))
+        else:
+            p = person(ratings)
+            count = np.zeros(ratings.shape)
+            count[~ratings.mask] = 1
+            count = np.dot(count, count.T)
+            weight = np.fmin(count, beta) / beta
+            sim = p * weight
+            np.save(open(cache_name, "wb"), sim)
+            return sim
     return _sim
 
 def amplify_person(alpha):
@@ -28,10 +40,16 @@ def amplify_person(alpha):
 
 
 def idf_person(ratings):
-    total = ratings.shape[0]
-    notmaskcount = np.sum(np.logical_not(ma.getmaskarray(ratings)).astype(int), axis=0)
-    weight = ma.masked_equal(ma.sqrt(ma.log(total / notmaskcount)), 0)
-    return ma.corrcoef(ratings * weight)
+    cache_name = os.path.join("recsys/algorithm/cache", "idf_person.npy")
+    if os.path.exists(cache_name):
+        return np.load(open(cache_name, "rb"))
+    else:
+        total = ratings.shape[0]
+        notmaskcount = np.sum(np.logical_not(ma.getmaskarray(ratings)).astype(int), axis=0)
+        weight = ma.masked_equal(ma.sqrt(ma.log(total / notmaskcount)), 0)
+        sim = ma.corrcoef(ratings * weight)
+        np.save(open(cache_name, "wb"), sim)
+        return sim
 
 
 def SimilaritorFactory(sim_config):
