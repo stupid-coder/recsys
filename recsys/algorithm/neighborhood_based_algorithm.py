@@ -46,7 +46,7 @@ class NeighborhoodBasedAlgorithm(Algorithm):
         self._mean_center_rating = self._rating - self._mean
         self._z = self.mean_center_rating / self._sigma
         similaritor = SimilaritorFactory(self.config.sim_config)
-        self._sim = cached("recsys/algorithm/cache/{}_{}_{}.npy".format(self.config.sim_config.name, self.config.sim_config.discounted_beta, self.config.sim_config.amplify_alpha))(similaritor(ratings=self._rating))
+        self._sim = cached("recsys/algorithm/cache/{}_{}_{}_{}.npy".format(self.name, self.config.sim_config.name, self.config.sim_config.discounted_beta, self.config.sim_config.amplify_alpha))(similaritor(ratings=self._rating))(self.rating)
         print("__fit__ end")
 
     def __predict__(self):
