@@ -7,6 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 
+from recsys.common.cache import cached
 from recsys.dataset import feature_enginner
 
 
@@ -124,6 +125,7 @@ class MovieLenDataset(Dataset):
         return self._ratings_code
 
     @property
+    @cached("recsys/dataset/cache/cache.npy")
     def R(self):
         if "_R" not in self.__dict__:
             fname = os.path.join(self._path, "rating.npy")
