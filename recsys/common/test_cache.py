@@ -22,3 +22,5 @@ class TestCache(object):
         assert os.path.exists(cache_file)
         result = cache_func(2)
         assert np.all(result == [1,2,3])
+
+        result = cache_func(3)

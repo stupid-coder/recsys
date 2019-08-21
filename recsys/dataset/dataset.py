@@ -125,17 +125,10 @@ class MovieLenDataset(Dataset):
         return self._ratings_code
 
     @property
-    @cached("recsys/dataset/cache/cache.npy")
+    @cached("recsys/dataset/cache/R.npy")
     def R(self):
-        if "_R" not in self.__dict__:
-            fname = os.path.join(self._path, "rating.npy")
-            if os.path.exists(fname):
-                self._R = np.load(open(fname, "rb"))
-            else:
-                self._R = np.zeros((6040, 3952), dtype=int)
-                for i in range(len(self.ratings_code)):
-                    uid, mid, rating = self.ratings_code.iloc[i]
-                    self._R[uid, mid] = rating
-                np.save(open(fname, "wb"), self._R)
-            print("[MovieLenDataset] load R finished")
+        self._R = np.zeros((6040, 3952), dtype=int)
+        for i in range(len(self.ratings_code)):
+            uid, mid, rating = self.ratings_code.iloc[i]
+            self._R[uid, mid] = rating
         return self._R
