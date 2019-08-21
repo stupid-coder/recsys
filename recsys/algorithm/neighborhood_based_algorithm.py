@@ -25,9 +25,9 @@ class PredictorConfig(NamedTuple):
 
 class NeighborhoodBasedConfig(NamedTuple):
     sim_config: SimilarityConfig
-    topk: int
-    sim_threshold: float
     predictor_config: PredictorConfig
+    topk: int = 5
+    sim_threshold: float = 0.8
 
 
 class NeighborhoodBasedAlgorithm(Algorithm):
@@ -45,8 +45,8 @@ class NeighborhoodBasedAlgorithm(Algorithm):
         self._sigma = ma.std(self._rating, axis=1, keepdims=True)
         self._mean_center_rating = self._rating - self._mean
         self._z = self.mean_center_rating / self._sigma
-        similaritor = SimilaritorFactory(self.config.sim_config)
-        self._sim = cached("recsys/algorithm/cache/{}_{}_{}_{}.npy".format(self.name, self.config.sim_config.name, self.config.sim_config.discounted_beta, self.config.sim_config.amplify_alpha))(similaritor(ratings=self._rating))(self.rating)
+        similaritor = cached("recsys/algorithm/cache/{}_{}_{}_{}.npy".format(self.name, self.config.sim_config.name, self.config.sim_config.discounted_beta, self.config.sim_config.amplify_alpha))(SimilaritorFactory(self.config.sim_config))
+        self._sim = similaritor(self.rating)
         print("__fit__ end")
 
     def __predict__(self):

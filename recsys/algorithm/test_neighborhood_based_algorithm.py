@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import numpy.ma as ma
 
 from recsys.algorithm.neighborhood_based_algorithm import (ItemBasedAlgorithm,
                                                            NeighborhoodBasedConfig,
@@ -9,12 +10,13 @@ from recsys.algorithm.neighborhood_based_algorithm import (ItemBasedAlgorithm,
                                                            SimilarityConfig,
                                                            UserBasedAlgorithm)
 from recsys.algorithm.test_data import test_rating_data
+from recsys.metric.metric import rmse
 
 
 class TestUserBasedAlgorithm(object):
 
     def test_mean_center_predictor_algo(self):
-        algo = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name="person", discounted_beta=None), topk=2, sim_threshold=None, predictor_config=PredictorConfig(name="mean_center")))
+        algo = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name="person"), topk=2, predictor_config=PredictorConfig(name="mean_center")))
         algo.fit(test_rating_data)
         rating_hat = algo.predict(None)
         print(rating_hat)
