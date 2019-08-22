@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     if args.algo == "user":
         algorithm = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
-    elif arg.algo == "item":
+    elif args.algo == "item":
         algorithm = ItemBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
     else:
         print("[USAGE] algo must be in [user,item]")
