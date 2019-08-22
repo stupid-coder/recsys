@@ -6,7 +6,8 @@ import argparse
 import numpy as np
 import numpy.ma as ma
 
-from recsys.algorithm.neighborhood_based_algorithm import (NeighborhoodBasedConfig,
+from recsys.algorithm.neighborhood_based_algorithm import (ItemBasedAlgorithm,
+                                                           NeighborhoodBasedConfig,
                                                            PredictorConfig,
                                                            SimilarityConfig,
                                                            UserBasedAlgorithm)
