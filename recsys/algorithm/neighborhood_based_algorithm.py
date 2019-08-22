@@ -17,8 +17,8 @@ from recsys.common.cache import cached
 
 class SimilarityConfig(NamedTuple):
     name: str
-    discounted_beta: int = 1
-    amplify_alpha: float = 1.0
+    discounted_beta: int = None
+    amplify_alpha: float = None
 
 class PredictorConfig(NamedTuple):
     name: str
@@ -26,8 +26,8 @@ class PredictorConfig(NamedTuple):
 class NeighborhoodBasedConfig(NamedTuple):
     sim_config: SimilarityConfig
     predictor_config: PredictorConfig
-    topk: int = 5
-    sim_threshold: float = 0.8
+    topk: int = None
+    sim_threshold: float = None
 
 
 class NeighborhoodBasedAlgorithm(Algorithm):
