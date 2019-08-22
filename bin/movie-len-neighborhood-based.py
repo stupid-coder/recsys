@@ -14,6 +14,7 @@ from recsys.dataset.dataset import MovieLenDataset
 from recsys.metric import metric
 
 parser = argparse.ArgumentParser(description="movie len item-based algorithm")
+parser.add_argument("algo", type=str, help="algorithm [user or item]")
 parser.add_argument("dataset", type=str, help="directory of movie len")
 parser.add_argument("topk", type=int, help="topk similarity to use")
 parser.add_argument("sim", type=str, help="similaritor")
@@ -27,7 +28,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
     ml = MovieLenDataset(args.dataset)
-    algorithm = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
+
+    if args.algo == "user":
+        algorithm = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
+    elif arg.algo == "item":
+        algorithm = ItemBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
+    else:
+        print("[USAGE] algo must be in [user,item]")
     algorithm.fit(ml.R)
     hat_rating = algorithm.predict(None)
     print("--------------------------------------------------")
