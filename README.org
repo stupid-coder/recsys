@@ -8,18 +8,25 @@
 
   
 ** TODO roadmap
-  - [ ] dataset
-    - [ ] movilen
-      - [ ] rating metric
+  - [-] dataset
+    - [-] movilen
+      - [X] rating metric
       - [ ] title id
-  - [ ] metric tool
+  - [-] metric tool
+    - [X] rmse
     - [ ] auc
-  - [ ] recommendation algorithm
-    - [ ] CF
-      - [ ] user-based neighborhood models
-      - [ ] item-based neighborhood models
+  - [-] recommendation algorithm
+    - [-] CF
+      - [X] user-based neighborhood models
+      - [X] item-based neighborhood models
+      - [ ] hybird neighborhood models
     - [ ] content-based
     - [ ] context-based
 
 
-
+* metric
+  | algo                                                                                                                                                     |  rmse |
+  |----------------------------------------------------------------------------------------------------------------------------------------------------------+-------|
+  | algo='user', amplify_alpha=None, dataset='data/ml-1m', discounted_beta=None, predictor='mean_center', sim='person', sim_threshold=None, topk=50          | 1.025 |
+  | algo='user', amplify_alpha=None, dataset='data/ml-1m', discounted_beta=None, predictor='mean_center', sim='person', sim_threshold=None, topk=100         | 1.024 |
+  | algo='user', amplify_alpha=2.0, dataset='data/ml-1m', discounted_beta=None, predictor='mean_center', sim='person', sim_threshold=None, topk=50 |       |

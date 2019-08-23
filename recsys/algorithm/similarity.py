@@ -10,9 +10,9 @@ import numpy.ma as ma
 def person(ratings, **unused_kwargs):
     return ma.corrcoef(ratings)
 
-def discounted_person(beta):
+def discounted_person(beta, cache_person):
     def _sim(ratings, **unused_kwargs):
-        p = person(ratings)
+        p = cache_person(ratings)
         count = np.zeros(ratings.shape)
         count[~ratings.mask] = 1
         count = np.dot(count, count.T)
@@ -21,12 +21,11 @@ def discounted_person(beta):
         return sim
     return _sim
 
-def amplify_person(alpha):
+def amplify_person(alpha, cache_person):
     def _sim(ratings, **unused_kwargs):
-        p = person(ratings)
+        p = cache_person(ratings)
         return p ** alpha
     return _sim
-
 
 def idf_person(ratings):
     total = ratings.shape[0]
@@ -36,14 +35,15 @@ def idf_person(ratings):
     return sim
 
 
-def SimilaritorFactory(sim_config):
-    if sim_config.name == "person":
-        return person
+def SimilaritorFactory(config):
+    person_cache = cached("recsys/algorithm/cache/{}_person.npy".format(self.name))
+    if config.sim_config.name == "person":
+        return person_cache(person)
     elif sim_config.name == "discounted_person":
-        return discounted_person(sim_config.discounted_beta)
+        return discounted_person(sim_config.discounted_beta, person_cache(person))
     elif sim_config.name == "amplify_person":
-        return amplify_person(sim_config.amplify_alpha)
+        return cache(amplify_person(sim_config.amplify_alpha, person_cache(person)))
     elif sim_config.name == "idf_person":
-        return idf_person
+        return cached("recsys/algorithm/cache/{}_idf_person.npy".format(self.name))(idf_person)
     else:
         raise NotImplementedError("[SimilaritorFactory] {} not implemented".format(sim_config))
