@@ -88,6 +88,7 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
 
     def fit(self, rating):
         self.__fit__(rating)
+
     def predict(self, data=None):
         return self.__predict__()
 
