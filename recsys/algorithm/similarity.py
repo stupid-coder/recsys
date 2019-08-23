@@ -37,15 +37,15 @@ def idf_person(ratings):
     return sim
 
 
-def SimilaritorFactory(config):
-    person_cache = cached("recsys/algorithm/cache/{}_person.npy".format(self.name))
+def SimilaritorFactory(name, config):
+    person_cache = cached("recsys/algorithm/cache/{}_person.npy".format(name))
     if config.sim_config.name == "person":
         return person_cache(person)
-    elif sim_config.name == "discounted_person":
-        return discounted_person(sim_config.discounted_beta, person_cache(person))
-    elif sim_config.name == "amplify_person":
-        return cache(amplify_person(sim_config.amplify_alpha, person_cache(person)))
-    elif sim_config.name == "idf_person":
-        return cached("recsys/algorithm/cache/{}_idf_person.npy".format(self.name))(idf_person)
+    elif config.sim_config.name == "discounted_person":
+        return discounted_person(config.sim_config.discounted_beta, person_cache(person))
+    elif config.sim_config.name == "amplify_person":
+        return amplify_person(config.sim_config.amplify_alpha, person_cache(person))
+    elif config.sim_config.name == "idf_person":
+        return cached("recsys/algorithm/cache/{}_idf_person.npy".format(name))(idf_person)
     else:
-        raise NotImplementedError("[SimilaritorFactory] {} not implemented".format(sim_config))
+        raise NotImplementedError("[SimilaritorFactory] {} not implemented".format(config.sim_config.name))

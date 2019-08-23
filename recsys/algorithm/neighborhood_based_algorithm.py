@@ -45,7 +45,7 @@ class NeighborhoodBasedAlgorithm(Algorithm):
         self._sigma = ma.std(self._rating, axis=1, keepdims=True)
         self._mean_center_rating = self._rating - self._mean
         self._z = self.mean_center_rating / self._sigma
-        similaritor = SimilaritorFactory(self.config.sim_config)
+        similaritor = SimilaritorFactory(self.name, self.config)
         self._sim = similaritor(self.rating)
         print("__fit__ end")
 
