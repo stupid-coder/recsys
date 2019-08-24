@@ -19,6 +19,7 @@ class SimilarityConfig(NamedTuple):
     name: str
     discounted_beta: int = None
     amplify_alpha: float = None
+    dims: int = None
 
 class PredictorConfig(NamedTuple):
     name: str
@@ -41,6 +42,7 @@ class NeighborhoodBasedAlgorithm(Algorithm):
             self._rating = rating
         else:
             self._rating = ma.masked_equal(rating, 0)
+
         self._mean = ma.mean(self._rating, axis=1, keepdims=True)
         self._sigma = ma.std(self._rating, axis=1, keepdims=True)
         self._mean_center_rating = self._rating - self._mean

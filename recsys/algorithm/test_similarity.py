@@ -6,6 +6,7 @@ import math
 import numpy as np
 import numpy.ma as ma
 
+from recsys.algorithm.similarity import pca_person
 from recsys.algorithm.test_data import test_rating_data
 
 
@@ -63,3 +64,9 @@ class TestNumpyMethod(object):
                 cov11 = _simulate_np_cov(z1, z1, ddof=0)
                 cov22 = _simulate_np_cov(z2, z2, ddof=0)
                 assert math.isclose(np_coef[i,j], _simulate_corrcoef_with_cov(cov12, cov11, cov22))
+
+class TestPcaPerson(object):
+    def test_pca_person(self):
+        data = ma.masked_equal(test_rating_data, 0)
+        sim = pca_person(2)
+        print(sim(data))
