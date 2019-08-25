@@ -21,8 +21,10 @@ class SimilarityConfig(NamedTuple):
     amplify_alpha: float = None
     dims: int = None
 
+
 class PredictorConfig(NamedTuple):
     name: str
+
 
 class NeighborhoodBasedConfig(NamedTuple):
     sim_config: SimilarityConfig

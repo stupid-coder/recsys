@@ -6,7 +6,7 @@ import math
 import numpy as np
 import numpy.ma as ma
 
-from recsys.algorithm.similarity import pca_person
+from recsys.algorithm.similarity import pca_person, pca_person_ratings
 from recsys.algorithm.test_data import test_rating_data
 
 
@@ -68,5 +68,5 @@ class TestNumpyMethod(object):
 class TestPcaPerson(object):
     def test_pca_person(self):
         data = ma.masked_equal(test_rating_data, 0)
-        sim = pca_person(2)
-        print(sim(data))
+        print(data)
+        print(pca_person_ratings(data))

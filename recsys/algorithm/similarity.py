@@ -37,16 +37,13 @@ def idf_person(ratings):
     sim = ma.corrcoef(ratings * weight)
     return sim
 
-def pca_person_ratings(ratings):
-    mean_ratings = ratings.mean(axis=0)
-    for i in range(ratings.shape[1]):
-        ratings[ma.getmaskarray(ratings[:, i]),i] = mean_ratings[i]
-    return ratings.data
-
-
-def pca_person(dims, cache_ratings):
+def pca_person(dims):
     def _sim(ratings, **unused_kwargs):
-        ratings = pca(cache_ratings(ratings),dims)
+        mean_ratings = ratings.mean(axis=0, keepdims=True)
+        ratings = ratings - mean_ratings
+        mean_ratings = ratings.mean(axis=1, keepdims=True)
+        ratings = ratings - mean_ratings
+        ratings = pca(ratings.filled(0),dims)
         return np.corrcoef(ratings)
     return _sim
 
@@ -62,7 +59,6 @@ def SimilaritorFactory(name, config):
     elif config.sim_config.name == "idf_person":
         return cached("recsys/algorithm/cache/{}_idf_person.npy".format(name))(idf_person)
     elif config.sim_config.name == "pca_person":
-        ratings_cache = cached("recsys/algorithm/cache/{}_pca_person_ratings.npy".format(name, config.sim_config.dims))(pca_person_ratings)
-        return pca_person(config.sim_config.dims, ratings_cache)
+        return cached("recsys/algorithm/cache/{}_{}_pca_person.npy".format(name, config.sim_config.dims))(pca_person(config.sim_config.dims))
     else:
         raise NotImplementedError("[SimilaritorFactory] {} not implemented".format(config.sim_config.name))
