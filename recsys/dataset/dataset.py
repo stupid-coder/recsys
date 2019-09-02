@@ -78,15 +78,17 @@ class MovieLenDataset(Dataset):
                                     parse_dates=[3],
                                     date_parser=feature_enginner.timestamp,
                                     engine="python")
-        print("[MovieLenDataset] load data finished")
-        self._code_users()
-        self._code_movies()
         self._code_ratings()
-        print("[MovieLenDataset] code data finished")
+        print("[MovieLenDataset] load data finished")
 
     def __init__(self, path):
         super().__init__("movie-len", path)
         self._read()
+
+    def code(self):
+        self._code_users()
+        self._code_movies()
+        print("[MovieLenDataset] code data finished")
 
     @property
     def users(self):
