@@ -23,6 +23,7 @@ parser.add_argument("predictor", type=str, help="predictor")
 parser.add_argument("--discounted_beta", type=int, help="discounted beta for weight")
 parser.add_argument("--amplify_alpha", type=float, help="amplify alpha for similarity")
 parser.add_argument("--sim_threshold", type=float, help="similarity threshold")
+parser.add_argument("--dims", type=int, help="reduce dimensions")
 
 
 if __name__ == "__main__":
@@ -31,9 +32,9 @@ if __name__ == "__main__":
     ml = MovieLenDataset(args.dataset)
 
     if args.algo == "user":
-        algorithm = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
+        algorithm = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha, dims=args.dims), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
     elif args.algo == "item":
-        algorithm = ItemBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
+        algorithm = ItemBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha, dims=args.dims), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
     else:
         print("[USAGE] algo must be in [user,item]")
     algorithm.fit(ml.R)

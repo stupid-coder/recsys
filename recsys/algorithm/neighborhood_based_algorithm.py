@@ -60,7 +60,7 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
         self._mean_center_rating = self._rating - self._mean
         self._z = self._mean_center_rating / self._sigma
 
-        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person"]
+        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person", "pca_person"]
 
         similaritor = SimilaritorFactory(self.name, self.config)
         self._sim = similaritor(self._rating)
@@ -108,7 +108,7 @@ class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
         self._mean = ma.mean(self._rating, axis=1, keepdims=True)
         self._mean_center_rating = self._rating - self._mean
 
-        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person"]
+        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person", "pca_person"]
 
         similaritor = SimilaritorFactory(self.name, self.config)
         self._sim = similaritor(self._mean_center_rating.T)
