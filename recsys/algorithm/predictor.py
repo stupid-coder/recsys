@@ -7,7 +7,6 @@ import numpy.ma as ma
 def norm_predictor(rating, sim, **not_used_kwargs):
     return ma.sum(sim * rating, axis=0) / ma.sum(ma.abs(sim))
 
-
 def mean_center_predictor(mean, mean_center_rating, sim, **not_used_kwargs):
     return mean + ma.sum(sim * mean_center_rating, axis=0) / ma.sum(ma.abs(sim))
 

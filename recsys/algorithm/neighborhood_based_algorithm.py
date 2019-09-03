@@ -96,24 +96,23 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
                                       mean_center_rating=self._mean_center_rating[self._neighborhood[i]],
                                       z=self._z[self._neighborhood[i]],
                                       sim=self._sim[i,self._neighborhood[i]][:, np.newaxis])
+        return rating_hat
 
 
 class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
 
     def __init__(self, config):
-        super().__init__("UserBasedAlgorithm", config)
+        super().__init__("ItemBasedAlgorithm", config)
 
     def __neighborhood__(self):
         self._mean = ma.mean(self._rating, axis=1, keepdims=True)
-        self._sigma = ma.std(self._rating, axis=1, keepdims=True)
         self._mean_center_rating = self._rating - self._mean
-        self._z = self._mean_center_rating / self._sigma
 
         assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person"]
 
         similaritor = SimilaritorFactory(self.name, self.config)
         self._sim = similaritor(self._mean_center_rating.T)
-        sorted_neighborhood = np.argsort(self._sim, axis=1)
+        sorted_neighborhood = ma.argsort(self._sim, axis=1)
         self._neighborhood = []
 
         items_num = self._rating.shape[1]
@@ -130,14 +129,17 @@ class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
         items_num = self._rating.shape[1]
         start = time.clock()
 
-        predictor = PredictorFactory(self.config.predictor_config)
+        from recsys.algorithm.predictor import norm_predictor
+        predictor = norm_predictor
 
         for i in range(items_num):
             if i % 10 == 0:
                 print("[__predict__:{:.2f}s] {},{} {}%".format((time.clock()-start),i, items_num, i * 100 / items_num))
-
             if len(self._neighborhood[i]) == 0:
                 continue
 
-            rating_hat[:,i] = predictor(rating=self._rating[:, self._neighborhood[i]],
-                                        sim=self._sim[i,self._neighborhood[i]][:, np.newaxis])
+            rating =  predictor(rating=self._rating[:, self._neighborhood[i]].T,
+                                sim=self._sim[i, self._neighborhood[i]][np.newaxis, :].T)
+            rating_hat[:, i] = rating.T
+
+        return rating_hat
