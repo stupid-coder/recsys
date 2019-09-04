@@ -70,14 +70,14 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
         users_num = self._rating.shape[0]
         for i in range(users_num):
             if self.config.topk is not None:
-                self._neighborhood.append([el for el in sorted_neighborhood[i] if el != i][:-self.config.topk-1:-1])
+                self._neighborhood.append([el for el in sorted_neighborhood[i] if el != i and el is not ma.masked][:-self.config.topk-1:-1])
             elif self.config.sim_threshold is not None:
-                self._neighborhood.append([el for el in sorted_neighborhood[i] if el != i and self._sim[i][el] > self.config.sim_threshold])
+                self._neighborhood.append([el for el in sorted_neighborhood[i] if el != i and el is not ma.masked and self._sim[i][el] > self.config.sim_threshold])
             else:
                 raise RuntimeError("topk or sim_threshold must be setted")
 
     def __predict__(self):
-        rating_hat = np.zeros(self._rating.shape)
+        rating_hat = ma.masked_equal(np.zeros(self._rating.shape),0)
         users_num = self._rating.shape[0]
         start = time.clock()
 
@@ -87,7 +87,7 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
             if i % 10 == 0:
                 print("[__predict__:{:.2f}s] {},{} {}%".format((time.clock()-start),i, users_num, i * 100 / users_num))
 
-            if len(self._neighborhood[i]) == 0:
+            if len(self._neighborhood[i]) == 0 or self._neighborhood is ma.nomask:
                 continue
 
             rating_hat[i] = predictor(rating=self._rating[self._neighborhood[i]],
@@ -118,9 +118,9 @@ class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
         items_num = self._rating.shape[1]
         for i in range(items_num):
             if self.config.topk is not None:
-                self._neighborhood.append([el for el in sorted_neighborhood[i] if el != i][:-self.config.topk-1:-1])
+                self._neighborhood.append([el for el in sorted_neighborhood[i] if el != i and el is not ma.masked][:-self.config.topk-1:-1])
             elif self.config.sim_threshold is not None:
-                self._neighborhood.append([el for el in sorted_neighborhood[i] if el != i and self._sim[i][el] > self.config.sim_threshold])
+                self._neighborhood.append([el for el in sorted_neighborhood[i] if el != i and el is not ma.masked and self._sim[i][el] > self.config.sim_threshold])
             else:
                 raise RuntimeError("topk or sim_threshold must be setted")
 
