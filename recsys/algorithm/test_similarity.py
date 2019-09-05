@@ -6,7 +6,7 @@ import math
 import numpy as np
 import numpy.ma as ma
 
-from recsys.algorithm.similarity import pca_person, pca_person_ratings
+from recsys.algorithm.similarity import pca_person
 from recsys.algorithm.test_data import test_rating_data
 
 
@@ -65,8 +65,22 @@ class TestNumpyMethod(object):
                 cov22 = _simulate_np_cov(z2, z2, ddof=0)
                 assert math.isclose(np_coef[i,j], _simulate_corrcoef_with_cov(cov12, cov11, cov22))
 
-class TestPcaPerson(object):
-    def test_pca_person(self):
-        data = ma.masked_equal(test_rating_data, 0)
-        print(data)
-        print(pca_person_ratings(data))
+
+class TestCorrcoef(object):
+    def test_corrcoef(self):
+        r = ma.masked_equal(np.load("data/ml-1m/rating.npy"), 0)
+
+        import pdb; pdb.set_trace()
+
+        sim = ma.corrcoef(r[0], r[2412])
+        print(sim)
+
+        print(np.corrcoef(r[0].filled(0), r[2412].filled(0)))
+        sim2 = ma.corrcoef(ma.vstack([r[0], r[2412]]))
+        print(sim2)
+
+        print(ma.dot(r[0], r[2412])/math.sqrt(ma.dot(r[0],r[0]))/math.sqrt(ma.dot(r[2412],r[2412])))
+
+        r0_m = r[0] - ma.mean(r[0])
+        r1_m = r[2412] - ma.mean(r[2412])
+        print(ma.dot(r0_m, r1_m)/math.sqrt(ma.dot(r0_m,r0_m))/math.sqrt(ma.dot(r1_m,r1_m)))
