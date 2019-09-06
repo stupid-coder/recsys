@@ -17,9 +17,12 @@ class TestUserBasedAlgorithm(object):
 
     def test_mean_center_predictor_algo(self):
         algo = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name="person"), topk=2, predictor_config=PredictorConfig(name="mean_center")))
+        breakpoint()
+        
         algo.fit(test_rating_data)
         rating_hat = algo.predict(None)
         print(rating_hat)
+        print(rmse(rating_hat, ma.masked_equal(test_rating_data, 0)))
 
     def test_mean_center_predictor_algo_with_sim_threshold(self):
         algo = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name="person", discounted_beta=None), topk=None, sim_threshold=0.0, predictor_config=PredictorConfig(name="mean_center")))
@@ -61,8 +64,9 @@ class TestUserBasedAlgorithm(object):
 
 
 class TestItemBasedAlgorithm(object):
-    def testE_mean_center_predictor_algo(self):
+    def test_mean_center_predictor_algo(self):
         algo = ItemBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name="person"), topk=2, sim_threshold=None, predictor_config=PredictorConfig(name="mean_center")))
         algo.fit(test_rating_data)
         rating_hat = algo.predict(None)
         print(rating_hat)
+        print(rmse(rating_hat, ma.masked_equal(test_rating_data, 0)))

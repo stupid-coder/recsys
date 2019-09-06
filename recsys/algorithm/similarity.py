@@ -11,7 +11,7 @@ from recsys.common.pca import pca
 
 
 def person(ratings, **unused_kwargs):
-    return np.corrcoef(ratings)
+    return ma.corrcoef(ratings)
 
 def discounted_person(beta, cache_person):
     def _sim(ratings, **unused_kwargs):
@@ -34,7 +34,7 @@ def idf_person(ratings):
     total = ratings.shape[0]
     notmaskcount = np.sum(np.logical_not(ma.getmaskarray(ratings)).astype(int), axis=0)
     weight = ma.masked_equal(ma.sqrt(ma.log(total / notmaskcount)), 0)
-    sim = np.corrcoef(ratings * weight)
+    sim = ma.corrcoef(ratings * weight)
     return sim
 
 def pca_person(dims):
