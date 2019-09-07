@@ -65,7 +65,7 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
         similaritor = SimilaritorFactory(self.name, self.config)
 
         print("[__beighborhood__:{.2f}s] calculate neighborhood begin".format(time.perf_counter()))
-        self._sim = similaritor(self._rating)
+        self._sim = similaritor(rating=self._rating, mean_center_rating=self._mean_center_rating)
         print("[__beighborhood__:{.2f}s] calculate neighborhood end".format(time.perf_counter()))
         sorted_neighborhood = ma.argsort(self._sim, axis=1, endwith=False)
         users_num, items_num = self._rating.shape
@@ -73,6 +73,10 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
         self._neighborhood = []
         for i in range(users_num):
             neighborhood = []
+
+            if i % 10 == 0:
+                print("[__neighborhood__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
+
             for j in range(items_num):
                 if self.config.topk is not None:
                     neighborhood.append([el for el in sorted_neighborhood[i] if el != i and self._sim[i][el] is not ma.masked and self._rating[el][j] is not ma.masked][:-self.config.topk-1:-1])
@@ -114,15 +118,17 @@ class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
         self._mean = ma.mean(self._rating, axis=1, keepdims=True)
         self._mean_center_rating = self._rating - self._mean
 
-        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person", "pca_person"]
+        assert self.config.sim_config.name in ["cosine"]
 
         similaritor = SimilaritorFactory(self.name, self.config)
-        self._sim = similaritor(self._rating.T)
+        self._sim = similaritor(rating=self._mean_center_rating.T)
         sorted_neighborhood = ma.argsort(self._sim, axis=1, endwith=False)
         users_num, items_num = self._rating.shape
 
         self._neighborhood = []
         for i in range(users_num):
+            if i % 10 == 0:
+                print("[__neighborhood__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
             neighborhood = []
             for j in range(items_num):
                 if self.config.topk is not None:

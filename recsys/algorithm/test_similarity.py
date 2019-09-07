@@ -6,7 +6,7 @@ import math
 import numpy as np
 import numpy.ma as ma
 
-from recsys.algorithm.similarity import pca_person
+from recsys.algorithm.similarity import cosine, pca_person, person
 from recsys.algorithm.test_data import test_rating_data
 
 
@@ -68,10 +68,8 @@ class TestNumpyMethod(object):
 
 class TestCorrcoef(object):
     def test_corrcoef(self):
+
         r = ma.masked_equal(np.load("data/ml-1m/rating.npy"), 0)
-
-        import pdb; pdb.set_trace()
-
         sim = ma.corrcoef(r[0], r[2412])
         print(sim)
 
@@ -84,3 +82,22 @@ class TestCorrcoef(object):
         r0_m = r[0] - ma.mean(r[0])
         r1_m = r[2412] - ma.mean(r[2412])
         print(ma.dot(r0_m, r1_m)/math.sqrt(ma.dot(r0_m,r0_m))/math.sqrt(ma.dot(r1_m,r1_m)))
+
+
+class TestSimilarity(object):
+    def test_person(self):
+        rating = ma.masked_equal(test_rating_data, 0)
+        p = person(mean_center_rating=rating-ma.mean(rating, axis=1, keepdims=True))
+        print(p)
+
+    def test_cosine(self):
+        rating = ma.masked_equal(test_rating_data, 0)
+        mean_center_rating = rating - ma.mean(rating, axis=1, keepdims=True)
+        p = cosine(rating=mean_center_rating.T)
+        print(p)
+
+    def test_item_cosine(self):
+        rating = ma.masked_equal(test_rating_data, 0)
+        rating = rating - ma.mean(rating, axis=1, keepdims=True)
+        p = cosine(rating.T)
+        print(p)
