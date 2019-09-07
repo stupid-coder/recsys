@@ -1,5 +1,6 @@
 #!/bin/env python
 # -*- coding: utf-8
+import logging
 import time
 from typing import NamedTuple
 
@@ -10,6 +11,7 @@ from recsys.algorithm.algorithm import Algorithm
 from recsys.algorithm.predictor import PredictorFactory
 from recsys.algorithm.similarity import SimilaritorFactory
 
+logger = logging.getLogger(__name__)
 
 class SimilarityConfig(NamedTuple):
     name: str
@@ -64,9 +66,9 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
 
         similaritor = SimilaritorFactory(self.name, self.config)
 
-        print("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
+        logger.info("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
         self._sim = similaritor(rating=self._rating, mean_center_rating=self._mean_center_rating)
-        print("[__neighborhood__:{:.2f}s] calculate neighborhood end".format(time.perf_counter()))
+        logger.info("[__neighborhood__:{:.2f}s] calculate neighborhood end".format(time.perf_counter()))
         sorted_neighborhood = ma.argsort(self._sim, axis=1, endwith=False)
         users_num, items_num = self._rating.shape
 
@@ -75,7 +77,7 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
             neighborhood = []
 
             if i % 10 == 0:
-                print("[__neighborhood__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
+                logger.info("[__neighborhood__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
 
             for j in range(items_num):
                 if self.config.topk is not None:
@@ -94,7 +96,7 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
         time.perf_counter()
         for i in range(users_num):
             if i % 10 == 0:
-                print("[__predict__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
+                logger.info("[__predict__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
 
             for j in range(items_num):
                 if not self._neighborhood[i][j]:
@@ -121,16 +123,16 @@ class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
         assert self.config.sim_config.name in ["cosine"]
 
         similaritor = SimilaritorFactory(self.name, self.config)
-        print("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
+        logger.info("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
         self._sim = similaritor(rating=self._mean_center_rating.T)
-        print("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
+        logger.info("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
         sorted_neighborhood = ma.argsort(self._sim, axis=1, endwith=False)
         users_num, items_num = self._rating.shape
 
         self._neighborhood = []
         for i in range(users_num):
             if i % 10 == 0:
-                print("[__neighborhood__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
+                logger.info("[__neighborhood__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
             neighborhood = []
             for j in range(items_num):
                 if self.config.topk is not None:
@@ -150,7 +152,7 @@ class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
 
         for i in range(users_num):
             if i % 10 == 0:
-                print("[__predict__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
+                logger.info("[__predict__:{:.2f}s] {},{} {}%".format(time.perf_counter(), i, users_num, i * 100 / users_num))
             for j in range(items_num):
                 if not self._neighborhood[i][j]:
                     continue

@@ -48,13 +48,14 @@ def idf_person(rating):
     w_rating = rating * weight
     return person(w_rating-ma.mean(w_rating, axis=1, keepdims=True))
 
+
 def pca_person(dims):
     def _sim(ratings, **unused_kwargs):
         mean_ratings = ratings.mean(axis=0, keepdims=True)
         ratings = ratings - mean_ratings
         mean_ratings = ratings.mean(axis=1, keepdims=True)
         ratings = ratings - mean_ratings
-        ratings = pca(ratings.filled(0),dims)
+        ratings = pca(ratings.filled(0), dims)
         return np.corrcoef(ratings)
     return _sim
 

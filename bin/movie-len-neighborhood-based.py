@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import logging
+import logging.config
+import sys
 
 import numpy as np
 import numpy.ma as ma
@@ -13,6 +16,10 @@ from recsys.algorithm.neighborhood_based_algorithm import (ItemBasedAlgorithm,
                                                            UserBasedAlgorithm)
 from recsys.dataset.dataset import MovieLenDataset
 from recsys.metric import metric
+
+logging.config.fileConfig("conf/logging.conf")
+
+logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(description="movie len item-based algorithm")
 parser.add_argument("algo", type=str, help="algorithm [user or item]")
@@ -28,7 +35,9 @@ parser.add_argument("--dims", type=int, help="reduce dimensions")
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    print(args)
+
+    logger.info(args)
+
     ml = MovieLenDataset(args.dataset)
 
     if args.algo == "user":
@@ -39,5 +48,5 @@ if __name__ == "__main__":
         print("[USAGE] algo must be in [user,item]")
     algorithm.fit(ml.R)
     hat_rating = algorithm.predict(None)
-    print("--------------------------------------------------")
-    print("rmse:{}".format(metric.rmse(hat_rating, ma.masked_equal(ml.R, 0))))
+    logger.info("--------------------------------------------------")
+    logger.info("rmse:{}".format(metric.rmse(hat_rating, ma.masked_equal(ml.R, 0))))

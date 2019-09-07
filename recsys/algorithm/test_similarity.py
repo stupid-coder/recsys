@@ -70,10 +70,11 @@ class TestCorrcoef(object):
     def test_corrcoef(self):
 
         r = ma.masked_equal(np.load("data/ml-1m/rating.npy"), 0)
-        sim = ma.corrcoef(r[0], r[2412])
-        print(sim)
+        # sim = ma.corrcoef(r[0], r[2412])
+        # print(sim)
 
-        print(np.corrcoef(r[0].filled(0), r[2412].filled(0)))
+        # print(np.corrcoef(r[0].filled(0), r[2412].filled(0)))
+
         sim2 = ma.corrcoef(ma.vstack([r[0], r[2412]]))
         print(sim2)
 

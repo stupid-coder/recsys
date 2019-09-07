@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+import logging
 import os
 
 import numpy as np
@@ -10,6 +11,7 @@ import pandas as pd
 from recsys.common.cache import cached
 from recsys.dataset import feature_enginner
 
+logger = logging.getLogger(__name__)
 
 class Dataset(object):
     def __init__(self, name, path):
@@ -79,7 +81,7 @@ class MovieLenDataset(Dataset):
                                     date_parser=feature_enginner.timestamp,
                                     engine="python")
         self._code_ratings()
-        print("[MovieLenDataset] load data finished")
+        logger.info("[MovieLenDataset] load data finished")
 
     def __init__(self, path):
         super().__init__("movie-len", path)
@@ -88,7 +90,7 @@ class MovieLenDataset(Dataset):
     def code(self):
         self._code_users()
         self._code_movies()
-        print("[MovieLenDataset] code data finished")
+        logger.info("[MovieLenDataset] code data finished")
 
     @property
     def users(self):
