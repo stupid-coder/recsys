@@ -64,9 +64,9 @@ class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
 
         similaritor = SimilaritorFactory(self.name, self.config)
 
-        print("[__beighborhood__:{.2f}s] calculate neighborhood begin".format(time.perf_counter()))
+        print("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter())
         self._sim = similaritor(rating=self._rating, mean_center_rating=self._mean_center_rating)
-        print("[__beighborhood__:{.2f}s] calculate neighborhood end".format(time.perf_counter()))
+        print("[__neighborhood__:{:.2f}s] calculate neighborhood end".format(time.perf_counter()))
         sorted_neighborhood = ma.argsort(self._sim, axis=1, endwith=False)
         users_num, items_num = self._rating.shape
 
@@ -121,7 +121,9 @@ class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
         assert self.config.sim_config.name in ["cosine"]
 
         similaritor = SimilaritorFactory(self.name, self.config)
+        print("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter())
         self._sim = similaritor(rating=self._mean_center_rating.T)
+        print("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter())
         sorted_neighborhood = ma.argsort(self._sim, axis=1, endwith=False)
         users_num, items_num = self._rating.shape
 
