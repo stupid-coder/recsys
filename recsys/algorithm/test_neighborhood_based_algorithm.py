@@ -17,8 +17,6 @@ class TestUserBasedAlgorithm(object):
 
     def test_mean_center_predictor_algo(self):
         algo = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name="person"), topk=2, predictor_config=PredictorConfig(name="mean_center")))
-        breakpoint()
-        
         algo.fit(test_rating_data)
         rating_hat = algo.predict(None)
         print(rating_hat)
@@ -65,7 +63,9 @@ class TestUserBasedAlgorithm(object):
 
 class TestItemBasedAlgorithm(object):
     def test_mean_center_predictor_algo(self):
-        algo = ItemBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name="person"), topk=2, sim_threshold=None, predictor_config=PredictorConfig(name="mean_center")))
+        algo = ItemBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name="cosine"), topk=2, sim_threshold=None, predictor_config=PredictorConfig(name="mean_center")))
+        breakpoint()
+
         algo.fit(test_rating_data)
         rating_hat = algo.predict(None)
         print(rating_hat)
