@@ -5,3 +5,5 @@ __pycache__
 *.zip
 *.npy
 .pytest_cache/
+log/
+nohup.out

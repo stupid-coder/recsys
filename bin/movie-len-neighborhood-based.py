@@ -9,11 +9,11 @@ import sys
 import numpy as np
 import numpy.ma as ma
 
-from recsys.algorithm.neighborhood_based_algorithm import (ItemBasedAlgorithm,
+from recsys.algorithm.neighborhood_based_algorithm import (ItemBasedNeighborhoodAlgorithm,
                                                            NeighborhoodBasedConfig,
                                                            PredictorConfig,
                                                            SimilarityConfig,
-                                                           UserBasedAlgorithm)
+                                                           UserBasedNeighborhoodAlgorithm)
 from recsys.dataset.dataset import MovieLenDataset
 from recsys.metric import metric
 
@@ -41,9 +41,9 @@ if __name__ == "__main__":
     ml = MovieLenDataset(args.dataset)
 
     if args.algo == "user":
-        algorithm = UserBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha, dims=args.dims), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
+        algorithm = UserBasedNeighborhoodAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha, dims=args.dims), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
     elif args.algo == "item":
-        algorithm = ItemBasedAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha, dims=args.dims), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
+        algorithm = ItemBasedNeighborhoodAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha, dims=args.dims), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
     else:
         print("[USAGE] algo must be in [user,item]")
     algorithm.fit(ml.R)
