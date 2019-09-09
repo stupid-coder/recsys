@@ -24,12 +24,12 @@ logger = logging.getLogger(__name__)
 parser = argparse.ArgumentParser(description="movie len item-based algorithm")
 parser.add_argument("algo", type=str, help="algorithm [user or item]")
 parser.add_argument("dataset", type=str, help="directory of movie len")
-parser.add_argument("topk", type=int, help="topk similarity to use")
 parser.add_argument("sim", type=str, help="similaritor")
 parser.add_argument("predictor", type=str, help="predictor")
 parser.add_argument("--discounted_beta", type=int, help="discounted beta for weight")
 parser.add_argument("--amplify_alpha", type=float, help="amplify alpha for similarity")
 parser.add_argument("--sim_threshold", type=float, help="similarity threshold")
+parser.add_argument("--topk", type=int, help="topk similarity to use")
 parser.add_argument("--dims", type=int, help="reduce dimensions")
 
 
