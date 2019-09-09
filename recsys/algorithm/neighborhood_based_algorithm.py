@@ -19,7 +19,6 @@ class SimilarityConfig(NamedTuple):
     amplify_alpha: float = None
     dims: int = None
 
-
 class PredictorConfig(NamedTuple):
     name: str
 
@@ -66,9 +65,10 @@ class NeighborhoodBasedAlgorithm(Algorithm):
 
         self._sim[np.diag_indices(self._sim.shape[0])] = 0.0
 
+        start = time.perf_counter()
         for j in range(n):
             if j % 10 == 0:
-                logger.info("[__predict__ {:.2f}s] {}/{}={}".format(time.perf_counter(), j, n, j/n))
+                logger.debug("[__predict__ {:.2f}s] {}/{}={:.2f}%".format(time.perf_counter()-start, j, n, j/n*100))
 
             _rating_m = np.where(self._rating[:, j] > 0)[0]
             _sim = self._sim[:, _rating_m]
@@ -86,8 +86,13 @@ class NeighborhoodBasedAlgorithm(Algorithm):
                 _mean_center_rating = _mean_center_rating[_neighborhood.flat].reshape((m, -1))
                 _z = _z[_neighborhood.flat].reshape((m, -1))
 
+                if _neighborhood.shape[1] < self.config.topk:
+                    logger.warning("{} neighborhood {} < {}".format(j, _neighborhood.shape[1], self.config.topk))
+
             elif self.config.sim_threshold is not None:
                 _sim = ma.where(_sim > self.config.sim_threshold, _sim, 0)
+                if 0 in ma.sum(_sim, axis=1):
+                    logger.warning("{} no neighborhood".format(j))
             else:
                 raise RuntimeError("topk or sim_threshold must be setted")
 

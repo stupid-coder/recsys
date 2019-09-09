@@ -48,5 +48,7 @@ if __name__ == "__main__":
         print("[USAGE] algo must be in [user,item]")
     algorithm.fit(ml.R)
     hat_rating = algorithm.predict(None)
+    rating = ma.masked_equal(ml.R, 0)
 
-    logger.info("rmse:{}".format(metric.rmse(hat_rating, ma.masked_equal(ml.R, 0))))
+    logger.info("statistic:{}".format(rating, hat_rating))
+    logger.info("rmse:{}".format(metric.rmse(rating, hat_rating)))
