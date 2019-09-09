@@ -19,7 +19,7 @@ from recsys.metric import metric
 
 logging.config.fileConfig("conf/logging.conf", disable_existing_loggers=False)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("main")
 
 parser = argparse.ArgumentParser(description="movie len item-based algorithm")
 parser.add_argument("algo", type=str, help="algorithm [user or item]")
