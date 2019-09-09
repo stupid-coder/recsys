@@ -17,7 +17,7 @@ from recsys.algorithm.neighborhood_based_algorithm import (ItemBasedNeighborhood
 from recsys.dataset.dataset import MovieLenDataset
 from recsys.metric import metric
 
-logging.config.fileConfig("conf/logging.conf")
+logging.config.fileConfig("conf/logging.conf", disable_existing_loggers=False)
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ parser.add_argument("--dims", type=int, help="reduce dimensions")
 
 if __name__ == "__main__":
     args = parser.parse_args()
-
+    logger.info("--------------------------------------------------")
     logger.info(args)
 
     ml = MovieLenDataset(args.dataset)
@@ -48,5 +48,5 @@ if __name__ == "__main__":
         print("[USAGE] algo must be in [user,item]")
     algorithm.fit(ml.R)
     hat_rating = algorithm.predict(None)
-    logger.info("--------------------------------------------------")
+
     logger.info("rmse:{}".format(metric.rmse(hat_rating, ma.masked_equal(ml.R, 0))))

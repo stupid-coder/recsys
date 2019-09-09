@@ -46,7 +46,7 @@ class NeighborhoodBasedAlgorithm(Algorithm):
         self._mean_center_rating = self._rating - self._mean
         self._z = self._mean_center_rating / self._sigma
 
-        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person", "cosine"]
+        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person", "pca_person","cosine"]
 
         similaritor = SimilaritorFactory(self.name, self.config)
 
@@ -87,7 +87,6 @@ class NeighborhoodBasedAlgorithm(Algorithm):
                 _z = _z[_neighborhood.flat].reshape((m, -1))
 
             elif self.config.sim_threshold is not None:
-                _idx = _sim > self.config.sim_threshold
                 _sim = ma.where(_sim > self.config.sim_threshold, _sim, 0)
             else:
                 raise RuntimeError("topk or sim_threshold must be setted")
