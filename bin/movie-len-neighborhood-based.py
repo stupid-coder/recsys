@@ -50,5 +50,5 @@ if __name__ == "__main__":
     hat_rating = algorithm.predict(None)
     rating = ma.masked_equal(ml.R, 0)
 
-    logger.info("statistic:{}".format(rating, hat_rating))
+    logger.info("statistic:{}".format(metric.statistic(rating, hat_rating)))
     logger.info("rmse:{}".format(metric.rmse(rating, hat_rating)))
