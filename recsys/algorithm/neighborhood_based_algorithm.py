@@ -2,7 +2,6 @@
 # -*- coding: utf-8
 import logging
 import time
-from multiprocessing import Pool, cpu_count
 from typing import NamedTuple
 
 import numpy as np
@@ -36,128 +35,88 @@ class NeighborhoodBasedAlgorithm(Algorithm):
     def __init__(self, name, config):
         super().__init__(name, config)
 
-    def __neighborhood__(self):
-        raise NotImplementedError("[{}] __neighborhood__ not implemented".format(self.__class__))
-
-    def __predict__(self):
-        raise NotImplementedError("[{}] __predict__ not implemented".format(self.__class__))
-
-    def fit(self, rating):
+    def __fit__(self, rating, row=True):
         if isinstance(rating, ma.MaskedArray):
             self._rating = rating
         else:
             self._rating = ma.masked_equal(rating, 0)
-        self.__neighborhood__()
 
-    def predict(self, rating=None):
-        return self.__predict__()
-
-class UserBasedAlgorithm(NeighborhoodBasedAlgorithm):
-
-    def __init__(self, config):
-        super().__init__("UserBasedAlgorithm", config)
-
-    def __do_neighborhood__(self, ui_pair):
-        i, j = ui_pair
-        if self.config.topk is not None:
-            return (i, j, [el for el in self._sorted_neighborhood[i] if el != i and self._sim[i][el] is not ma.masked and self._rating[el][j] is not ma.masked][:-self.config.topk-1:-1])
-
-        if self.config.sim_threshold is not None:
-            return (i, j, [el for el in self._sorted_neighborhood[i] if el != i and self._sim[i][el] > self.config.sim_threshold and self._rating[el][j] is not ma.masked])
-
-        raise RuntimeError("topk or sim_threshold must be setted")
-
-    def __neighborhood__(self):
         self._mean = ma.mean(self._rating, axis=1, keepdims=True)
         self._sigma = ma.std(self._rating, axis=1, keepdims=True)
         self._mean_center_rating = self._rating - self._mean
         self._z = self._mean_center_rating / self._sigma
 
-        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person", "pca_person"]
+        assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person", "cosine"]
 
         similaritor = SimilaritorFactory(self.name, self.config)
 
-        logger.info("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
-        self._sim = similaritor(rating=self._rating, mean_center_rating=self._mean_center_rating)
-        logger.info("[__neighborhood__:{:.2f}s] calculate neighborhood end".format(time.perf_counter()))
-        self._sorted_neighborhood = ma.argsort(self._sim, axis=1, endwith=False)
-        users_num, items_num = self._rating.shape
+        if row:
+            self._sim = similaritor(rating=self._rating, mean_center_rating=self._mean_center_rating)
+        else:
+            self._rating = self._rating.T
+            self._mean_center_rating = self._mean_center_rating.T
+            self._z = self._z.T
+            self._sim = similaritor(rating=self._rating, mean_center_rating=self._mean_center_rating)
 
-        with Pool(int(cpu_count()*0.8)) as p:
-            self._neighborhood = [[[] for j in range(items_num)] for i in range(users_num)]
-            for (i, j, neighborhood) in p.map(self.__do_neighborhood__, [(i, j) for i in range(users_num) for j in range(items_num)]):
-                self._neighborhood[i][j] = neighborhood
+    def __predict__(self, row=True):
 
-    def __do_predict__(self, ui_pair):
-        i, j = ui_pair
-        if not self._neighborhood[i][j]:
-            return (i, j, ma.masked)
-        return (i, j, self._predictor(rating=self._rating[self._neighborhood[i][j], j],
-                                      mean=self._mean[i],
-                                      sigma=self._sigma[i],
-                                      mean_center_rating=self._mean_center_rating[self._neighborhood[i][j], j],
-                                      z=self._z[self._neighborhood[i][j], j],
-                                      sim=self._sim[i, self._neighborhood[i][j]]))
-
-    def __predict__(self):
         rating_hat = ma.masked_equal(np.zeros(self._rating.shape), 0)
-        users_num, items_num = self._rating.shape
-        self._predictor = PredictorFactory(self.config.predictor_config)
+        m, n = self._rating.shape
+        _predictor = PredictorFactory(self.config.predictor_config)
 
-        with Pool(int(cpu_count() * 0.8)) as p:
-            for (i, j, r_hat) in p.map(self.__do_predict__, [(i, j) for i in range(users_num) for j in range(items_num)]):
-                rating_hat[i,j] = r_hat
+        self._sim[np.diag_indices(self._sim.shape[0])] = 0.0
 
+        for j in range(n):
+            if j % 10 == 0:
+                logger.info("[__predict__ {:.2f}s] {}/{}={}".format(time.perf_counter(), j, n, j/n))
+
+            _rating_m = np.where(self._rating[:, j] > 0)[0]
+            _sim = self._sim[:, _rating_m]
+
+            _rating = self._rating[_rating_m, j]
+            _mean_center_rating = self._mean_center_rating[_rating_m, j]
+            _z = self._z[_rating_m, j]
+
+            if self.config.topk is not None:
+                _neighborhood = ma.argsort(_sim, axis=1, endwith=False)[:, -self.config.topk:]
+
+                _num_n = _neighborhood.shape[1]
+                _sim = _sim[[int(i/_num_n) for i in range(_neighborhood.size)], _neighborhood.flat].reshape((m, -1))
+                _rating = _rating[_neighborhood.flat].reshape((m, -1))
+                _mean_center_rating = _mean_center_rating[_neighborhood.flat].reshape((m, -1))
+                _z = _z[_neighborhood.flat].reshape((m, -1))
+
+            elif self.config.sim_threshold is not None:
+                _idx = _sim > self.config.sim_threshold
+                _sim = ma.where(_sim > self.config.sim_threshold, _sim, 0)
+            else:
+                raise RuntimeError("topk or sim_threshold must be setted")
+
+            rating_hat[:, j] = _predictor(rating=_rating,
+                                          mean=np.squeeze(self._mean) if row else self._mean[j][0],
+                                          sigma=np.squeeze(self._sigma) if row else self._sigma[j][0],
+                                          mean_center_rating=_mean_center_rating,
+                                          z=_z,
+                                          sim=_sim)
         return rating_hat
 
-
-class ItemBasedAlgorithm(NeighborhoodBasedAlgorithm):
-
+class UserBasedNeighborhoodAlgorithm(NeighborhoodBasedAlgorithm):
     def __init__(self, config):
-        super().__init__("ItemBasedAlgorithm", config)
+        super().__init__("UserBasedNeighborhoodAlgorithm", config)
 
-    def __do_neighborhood__(self, ui_pair):
-        i,j = ui_pair
-        if self.config.topk is not None:
-            return (i, j, [el for el in self._sorted_neighborhood[j] if el != j and self._sim[j][el] is not ma.masked and self._rating[i][el] is not ma.masked][:-self.config.topk-1:-1])
-        if self.config.sim_threshold is not None:
-            return (i, j, [el for el in self._sorted_neighborhood[j] if el != j and self._sim[j][el] > self.config.sim_threshold and self._rating[i][el] is not ma.masked])
-        raise RuntimeError("topk or sim_threshold must be setted")
+    def fit(self, rating):
+        self.__fit__(rating)
 
-    def __neighborhood__(self):
-        self._mean = ma.mean(self._rating, axis=1, keepdims=True)
-        self._mean_center_rating = self._rating - self._mean
-
-        assert self.config.sim_config.name in ["cosine"]
-
-        similaritor = SimilaritorFactory(self.name, self.config)
-        logger.info("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
-        self._sim = similaritor(rating=self._mean_center_rating.T)
-        logger.info("[__neighborhood__:{:.2f}s] calculate neighborhood begin".format(time.perf_counter()))
-        self._sorted_neighborhood = ma.argsort(self._sim, axis=1, endwith=False)
-        users_num, items_num = self._rating.shape
+    def predict(self, rating=None):
+        return self.__predict__()
 
 
-        with Pool(int(cpu_count()*0.8)) as p:
-            self._neighborhood = [[[] for j in range(items_num)] for i in range(users_num)]
-            for (i,j,neighborhood) in p.map(self.__do_neighborhood__, [(i, j) for i in range(users_num) for j in range(items_num)]):
-                self._neighborhood[i][j] = neighborhood
+class ItemBasedNeighborhoodAlgorithm(NeighborhoodBasedAlgorithm):
+    def __init__(self, config):
+        super().__init__("ItemBasedNeighborhoodAlgorithm", config)
 
-    def __do_predict__(self, ui_pair):
-        i, j = ui_pair
-        if not self._neighborhood[i][j]:
-            return (i, j, ma.masked)
-        return (i, j, self._predictor(rating=self._rating[i, self._neighborhood[i][j]],
-                                      sim=self._sim[i, self._neighborhood[i][j]]))
+    def fit(self, rating):
+        self.__fit__(rating, row=False)
 
-    def __predict__(self):
-        rating_hat = ma.masked_equal(np.zeros(self._rating.shape), 0)
-        users_num, items_num = self._rating.shape
-
-        from recsys.algorithm.predictor import norm_predictor
-        self._predictor = norm_predictor
-
-        with Pool(int(cpu_count()*0.8)) as p:
-            for (i, j, r_hat) in p.map(self.__do_predict__, [(i, j) for i in range(users_num) for j in range(items_num)]):
-                rating_hat[i, j] = r_hat
-        return rating_hat
+    def predict(self, rating=None):
+        return self.__predict__(row=False).T

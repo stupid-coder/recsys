@@ -5,21 +5,23 @@ import numpy.ma as ma
 
 
 def norm_predictor(rating, sim, **not_used_kwargs):
-    return np.dot(sim, rating.T) / ma.sum(ma.abs(sim))
+    return np.sum(rating * sim, axis=1) / np.sum(np.abs(sim), axis=1)
 
 def mean_center_predictor(mean, mean_center_rating, sim, **not_used_kwargs):
-    return mean + ma.dot(sim, mean_center_rating.T) / ma.sum(ma.abs(sim))
+    return mean + np.sum(mean_center_rating * sim, axis=1) / np.sum(np.abs(sim), axis=1)
 
 def mean_sigma_predictor(mean, sigma, z, sim, **not_used_kwargs):
-    return mean + sigma * ma.sum(sim, z.T) / ma.sum(ma.abs(sim))
+    return mean + sigma * ma.sum(sim * z, axis=1) / ma.sum(ma.abs(sim), axis=1)
 
 
 def PredictorFactory(predictor_config):
     if predictor_config.name == "norm":
         return norm_predictor
-    elif predictor_config.name == "mean_center":
+
+    if predictor_config.name == "mean_center":
         return mean_center_predictor
-    elif predictor_config.name == "mean_sigma":
+
+    if predictor_config.name == "mean_sigma":
         return mean_sigma_predictor
-    else:
-        raise NotImplementedError("[PredictorFactory] {} not implemented".format(predictor_config))
+
+    raise NotImplementedError("[PredictorFactory] {} not implemented".format(predictor_config))

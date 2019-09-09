@@ -17,8 +17,9 @@ def person(mean_center_rating, **unused_kwargs):
     _denom = np.outer(_diag, _diag)
     return _c / _denom
 
-def cosine(rating, **unused_kwargs):
-    _filled_rating = rating.filled(0)
+def cosine(mean_center_rating, **unused_kwargs):
+    print(mean_center_rating)
+    _filled_rating = mean_center_rating.filled(0)
     _c = np.dot(_filled_rating, _filled_rating.T)
     _diag = np.sqrt(np.diag(_c))
     _denom = np.outer(_diag, _diag)

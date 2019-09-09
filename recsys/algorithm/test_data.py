@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import numpy.ma as ma
 
 test_rating_data = np.array([
     [7,6,7,4,5,4],
