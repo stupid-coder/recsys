@@ -89,6 +89,9 @@ class NeighborhoodBasedAlgorithm(Algorithm):
                 if _neighborhood.shape[1] < self.config.topk:
                     logger.warning("{} neighborhood {} < {}".format(j, _neighborhood.shape[1], self.config.topk))
 
+                if _neighborhood.shape[1] <= 1:
+                    continue
+
             elif self.config.sim_threshold is not None:
                 _sim = ma.where(_sim > self.config.sim_threshold, _sim, 0)
                 if 0 in ma.sum(_sim, axis=1):
