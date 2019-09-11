@@ -61,7 +61,7 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
             hat_rating2, _ = self.__forward__(j)
             _g_ngb_weight = (0.5 * ma.sum(ma.power(self._rating[:, j] - hat_rating1, 2)) - 0.5 * ma.sum(ma.power(self._rating[:, j] - hat_rating2, 2))) / 2e-6
             self._weight[idx] += 1e-6
-            assert np.all(np.isclose(_g_ngb_weight, g_weight[idx]))
+            assert np.all(np.isclose(_g_ngb_weight, g_weight[idx], rtol=1e-2))
             it.iternext()
 
         for i in range(self._m_bias.size):
@@ -73,7 +73,7 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
             hat_rating2, _ = self.__forward__(j)
             _g_m_bias = (0.5 * ma.sum(ma.power(self._rating[:, j] - hat_rating1, 2)) - 0.5 * ma.sum(ma.power(self._rating[:, j] - hat_rating2, 2))) / 2e-6
             self._m_bias[i] += 1e-6
-            assert np.all(np.isclose(_g_m_bias, g_m_bias[i]))
+            assert np.all(np.isclose(_g_m_bias, g_m_bias[i], rtol=1e-2))
 
         self._n_bias[j] += 1e-6
         hat_rating1, _ = self.__forward__(j)
@@ -123,7 +123,7 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
                 # forward
                 _hat_rating, mid_data = self.__forward__(j)
                 _loss = 0.5 * ma.sum(ma.power(self._rating[:, j]  - _hat_rating, 2))
-                _epoch_loss += _loss / self._m
+                _epoch_loss += _loss
 
                 # backward
                 _g_m_bias, _g_ngb_m_bias, _g_ngb_n_bias, _g_weight = self.__backward__(_hat_rating, self._rating[:, j], mid_data[0], mid_data[1])
@@ -140,7 +140,7 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
                 self._n_bias[j] -= self.config.lr * _g_ngb_n_bias + self.config.wdecay * self._n_bias[j]
                 self._weight -= self.config.lr * _g_weight + self.config.wdecay * self._weight
 
-            _epoch_loss /= self._n
+            _epoch_loss /= ma.count(self._rating)
             logger.debug("[{:4d} epoch\t{:.2f}s] loss:{:.2f}".format(epoch, time.perf_counter()-start, _epoch_loss))
 
 
