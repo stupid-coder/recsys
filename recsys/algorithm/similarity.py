@@ -63,18 +63,18 @@ def pca_person(dims):
     return _sim
 
 
-def SimilaritorFactory(name, config):
-    if config.sim_config.name == "person":
+def SimilaritorFactory(sim_config):
+    if sim_config.name == "person":
         return person
-    elif config.sim_config.name == "discounted_person":
-        return discounted_person(config.sim_config.discounted_beta)
-    elif config.sim_config.name == "amplify_person":
-        return amplify_person(config.sim_config.amplify_alpha)
-    elif config.sim_config.name == "idf_person":
+    elif sim_config.name == "discounted_person":
+        return discounted_person(sim_config.discounted_beta)
+    elif sim_config.name == "amplify_person":
+        return amplify_person(sim_config.amplify_alpha)
+    elif sim_config.name == "idf_person":
         return idf_person
-    elif config.sim_config.name == "pca_person":
-        return pca_person(config.sim_config.dims)
-    elif config.sim_config.name == "cosine":
+    elif sim_config.name == "pca_person":
+        return pca_person(sim_config.dims)
+    elif sim_config.name == "cosine":
         return cosine
     else:
-        raise NotImplementedError("[SimilaritorFactory] {} not implemented".format(config.sim_config.name))
+        raise NotImplementedError("[SimilaritorFactory] {} not implemented".format(sim_config.name))

@@ -47,7 +47,7 @@ class NeighborhoodBasedAlgorithm(Algorithm):
 
         assert self.config.sim_config.name in ["person", "discounted_person", "amplify_person", "idf_person", "pca_person","cosine"]
 
-        similaritor = SimilaritorFactory(self.name, self.config)
+        similaritor = SimilaritorFactory(self.config.sim_config)
 
         if row:
             self._sim = similaritor(rating=self._rating, mean_center_rating=self._mean_center_rating)
@@ -78,7 +78,7 @@ class NeighborhoodBasedAlgorithm(Algorithm):
             _z = self._z[_rating_m, j]
 
             if self.config.topk is not None:
-                _neighborhood = ma.argsort(_sim, axis=1, endwith=False)[:, -self.config.topk:]
+                _neighborhood = np.argsort(_sim, axis=1)[:, -self.config.topk:]
 
                 _num_n = _neighborhood.shape[1]
                 _sim = _sim[[int(i/_num_n) for i in range(_neighborhood.size)], _neighborhood.flat].reshape((m, -1))
