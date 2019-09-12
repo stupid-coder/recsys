@@ -55,7 +55,9 @@ if __name__ == "__main__":
     elif args.algo == "item_reg":
         algorithm = ItemBasedRegressionModel(RegressionModelNeighborhoodBasedConfig(topk=args.topk, lr=args.learn_rate, epochs=args.epochs, wdecay=args.weight_decay, check_gradient=args.check_gradient))
     else:
-        print("[USAGE] algo must be in [user,item]")
+        print("[USAGE] algo must be in [user,item,user_reg,item_reg]")
+        sys.exit(-1)
+
     algorithm.fit(ml.R)
     hat_rating = algorithm.predict(None)
     rating = ma.masked_equal(ml.R, 0)

@@ -25,12 +25,4 @@
 
 
 * metric
-  | algo                                                                                                                                                      |  rmse |
-  |-----------------------------------------------------------------------------------------------------------------------------------------------------------+-------|
-  | algo='user', amplify_alpha=None, dataset='data/ml-1m/', discounted_beta=None, predictor='norm', sim='person', sim_threshold=None, topk=50                 | 3.726 |
-  | algo='user', amplify_alpha=None, dataset='data/ml-1m', discounted_beta=None, predictor='mean_center', sim='person', sim_threshold=None, topk=50           | 1.025 |
-  | algo='user', amplify_alpha=None, dataset='data/ml-1m', discounted_beta=None, predictor='mean_center', sim='person', sim_threshold=None, topk=100          | 1.024 |
-  | algo='user', amplify_alpha=None, dataset='data/ml-1m/', discounted_beta=None, predictor='mean_sigma', sim='person', sim_threshold=None, topk=50           | 1.025 |
-  | algo='user', amplify_alpha=None, dataset='data/ml-1m/', discounted_beta=15, predictor='mean_center', sim='discounted_person', sim_threshold=None, topk=50 | 1.023 |
-  | algo='user', amplify_alpha=2.0, dataset='data/ml-1m/', discounted_beta=None, predictor='mean_center', sim='amplify_person', sim_threshold=None, topk=50   | 1.027 |
 
