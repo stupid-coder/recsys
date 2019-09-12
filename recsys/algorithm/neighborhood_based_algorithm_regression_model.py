@@ -115,15 +115,17 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
         self._m_bias = np.random.randn(self._m)
         self._n_bias = np.random.randn(self._n)
 
+        step = 0
         for epoch in range(self.config.epochs):
             _epoch_loss = 0.0
             start = time.perf_counter()
 
             for j in range(self._n):
                 # forward
+                step += 1
                 _hat_rating, mid_data = self.__forward__(j)
-                _loss = 0.5 * ma.sum(ma.power(self._rating[:, j]  - _hat_rating, 2))
-                _epoch_loss += _loss
+                _loss = 0.5 * ma.mean(ma.power(self._rating[:, j]  - _hat_rating, 2))
+                logger.debug("[{:4d} epoch\t{:.2f}s] loss:{:.2f}".format(step, time.perf_counter()-start, _loss))
 
                 # backward
                 _g_m_bias, _g_ngb_m_bias, _g_ngb_n_bias, _g_weight = self.__backward__(_hat_rating, self._rating[:, j], mid_data[0], mid_data[1])
@@ -140,10 +142,6 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
                 self._m_bias -= self.config.lr * _g_m_bias + self.config.wdecay * self._m_bias
                 self._n_bias[j] -= self.config.lr * _g_ngb_n_bias + self.config.wdecay * self._n_bias[j]
                 self._weight -= self.config.lr * _g_weight + self.config.wdecay * self._weight
-
-            _epoch_loss /= ma.count(self._rating)
-            logger.debug("[{:4d} epoch\t{:.2f}s] loss:{:.2f}".format(epoch, time.perf_counter()-start, _epoch_loss))
-
 
     def __predict__(self):
         hat_rating = ma.masked_all((self._m, self._n))
