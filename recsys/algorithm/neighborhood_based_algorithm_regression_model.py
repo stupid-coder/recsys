@@ -133,7 +133,8 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
                         _g_m_bias[i] += g
 
                 # check gradient
-                self.__check_gradient__(j, _g_weight, _g_m_bias, _g_ngb_n_bias)
+                if self.config.check_gradient:
+                    self.__check_gradient__(j, _g_weight, _g_m_bias, _g_ngb_n_bias)
 
                 # update gradient
                 self._m_bias -= self.config.lr * _g_m_bias + self.config.wdecay * self._m_bias
