@@ -43,7 +43,7 @@ parser.add_argument("--check_gradient", type=bool, default=False, help="check gr
 if __name__ == "__main__":
     args = parser.parse_args()
     logger.info("--------------------------------------------------")
-
+    print("neighborhood args: {}".format(args))
     ml = MovieLenDataset(args.dataset)
 
     if args.algo == "user":
@@ -63,4 +63,4 @@ if __name__ == "__main__":
     rating = ma.masked_equal(ml.R, 0)
 
     logger.debug("rating_count: {rating_count}\tpredict_count:{predict_count}\tpredict_rate:{predict_rate}".format(**metric.statistic(rating, hat_rating)))
-    logger.info("|{}|{}|".format(args, metric.rmse(rating, hat_rating)))
+    logger.info("|{}|{}|".format(args, metric.rmse(rating[:, 0], hat_rating[:, 0])))

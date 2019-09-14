@@ -116,9 +116,9 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
         self._n_bias = np.random.randn(self._n)
 
         step = 0
+        start = time.perf_counter()
         for epoch in range(self.config.epochs):
             _epoch_loss = 0.0
-            start = time.perf_counter()
 
             for j in range(self._n):
                 # forward
@@ -136,12 +136,13 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
 
                 # check gradient
                 if self.config.check_gradient:
+                    logger.debug("check gradient")
                     self.__check_gradient__(j, _g_weight, _g_m_bias, _g_ngb_n_bias)
 
                 # update gradient
-                self._m_bias -= self.config.lr * _g_m_bias + self.config.wdecay * self._m_bias
-                self._n_bias[j] -= self.config.lr * _g_ngb_n_bias + self.config.wdecay * self._n_bias[j]
-                self._weight -= self.config.lr * _g_weight + self.config.wdecay * self._weight
+                self._m_bias -= self.config.lr / self._m * _g_m_bias + self.config.wdecay * self._m_bias
+                self._n_bias[j] -= self.config.lr / self._m * _g_ngb_n_bias + self.config.wdecay * self._n_bias[j]
+                self._weight -= self.config.lr /self._m * _g_weight + self.config.wdecay * self._weight
 
     def __predict__(self):
         hat_rating = ma.masked_all((self._m, self._n))
