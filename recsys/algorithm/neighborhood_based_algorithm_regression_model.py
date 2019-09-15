@@ -174,14 +174,15 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
 
                 # check gradient
                 if self.config.check_gradient:
+                    logger.debug("check gradient")
                     self.__check_gradient__(j, _g_weight, _g_m_bias, _g_ngb_n_bias)
 
                 logger.debug("[gradient] max(m_bias): {}\tmax(n_bias): {}\tmax(weight):{}".format(ma.max(ma.abs(_g_m_bias)), ma.abs(_g_ngb_n_bias), ma.max(ma.abs(_g_weight))))
 
                 # update gradient
-                self._m_bias -= self.config.lr * _g_m_bias + self.config.wdecay * self._m_bias
-                self._n_bias[j] -= self.config.lr * _g_ngb_n_bias + self.config.wdecay * self._n_bias[j]
-                self._weight -= self.config.lr * _g_weight + self.config.wdecay * self._weight
+                self._m_bias -= self.config.lr / self._m * _g_m_bias + self.config.wdecay * self._m_bias
+                self._n_bias[j] -= self.config.lr / self._m * _g_ngb_n_bias + self.config.wdecay * self._n_bias[j]
+                self._weight -= self.config.lr /self._m * _g_weight + self.config.wdecay * self._weight
 
             logger.debug("[{:4d} epoch\ttime:{:.2f}s] epoch loss:{:.2f}".format(epoch, time.perf_counter()-start, self.__loss__(self._rating, self.__predict__())))
             if epoch % self.config.save_per_epochs == 0:
