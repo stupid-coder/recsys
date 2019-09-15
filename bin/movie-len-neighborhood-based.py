@@ -38,6 +38,7 @@ parser.add_argument("--learn_rate", type=float, default=0.001, help="learning ra
 parser.add_argument("--epochs", type=int, default=10000, help="epochs about regression model")
 parser.add_argument("--weight_decay", type=float, default=0.001, help="weight decay or l2 regularization")
 parser.add_argument("--check_gradient", type=bool, default=False, help="check gradient in optimization")
+parser.add_argument("--model_dir", type=str, help="model directory to save and restore")
 
 
 if __name__ == "__main__":
@@ -51,9 +52,9 @@ if __name__ == "__main__":
     elif args.algo == "item":
         algorithm = ItemBasedNeighborhoodAlgorithm(NeighborhoodBasedConfig(sim_config=SimilarityConfig(name=args.sim, discounted_beta=args.discounted_beta, amplify_alpha=args.amplify_alpha, dims=args.dims), topk=args.topk, sim_threshold=args.sim_threshold, predictor_config=PredictorConfig(name=args.predictor)))
     elif args.algo == "user_reg":
-        algorithm = UserBasedRegressionModel(RegressionModelNeighborhoodBasedConfig(topk=args.topk, lr=args.learn_rate, epochs=args.epochs, wdecay=args.weight_decay, check_gradient=args.check_gradient))
+        algorithm = UserBasedRegressionModel(RegressionModelNeighborhoodBasedConfig(topk=args.topk, lr=args.learn_rate, epochs=args.epochs, wdecay=args.weight_decay, check_gradient=args.check_gradient, model_dir=args.model_dir))
     elif args.algo == "item_reg":
-        algorithm = ItemBasedRegressionModel(RegressionModelNeighborhoodBasedConfig(topk=args.topk, lr=args.learn_rate, epochs=args.epochs, wdecay=args.weight_decay, check_gradient=args.check_gradient))
+        algorithm = ItemBasedRegressionModel(RegressionModelNeighborhoodBasedConfig(topk=args.topk, lr=args.learn_rate, epochs=args.epochs, wdecay=args.weight_decay, check_gradient=args.check_gradient), model_dir=args.model_dir)
     else:
         print("[USAGE] algo must be in [user,item,user_reg,item_reg]")
         sys.exit(-1)

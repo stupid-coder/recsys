@@ -19,3 +19,9 @@ class Algorithm(object):
 
     def predict(self, rating):
         raise NotImplementedError("[{}] predict not implemented".format(self.__class__))
+
+    def save(self):
+        raise NotImplementedError("[{}] save not implemented".format(self.__class__))
+
+    def load(self, model_file):
+        raise NotImplementedError("[{}] load not implemented".format(self.__class__))

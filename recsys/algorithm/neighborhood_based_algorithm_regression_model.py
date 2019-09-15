@@ -4,6 +4,7 @@
 
 import logging
 import time
+from pathlib import Path
 from typing import NamedTuple
 
 import numpy as np
@@ -20,10 +21,26 @@ class RegressionModelNeighborhoodBasedConfig(NamedTuple):
     epochs: int = 1000
     wdecay: float = 0
     check_gradient: bool = False
+    model_dir: str = None
+    save_per_epochs: int = 5
 
 class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
     def __init__(self, name, config):
         super().__init__(name, config)
+        model_path = Path(self.config.model_dir)
+
+        if not model_path.exists():
+            model_path.mkdir()
+        else:
+            model_file = None
+            self._epoch = 0
+            for mfile in model_path.glob("{}.[0-9]*".format(self.name)):
+                mname, epoch = mfile.split(".")
+                if int(step) > self._epoch:
+                    self._epoch = int(epoch)
+                    model_file = mfile
+            if model_file is not None:
+                self.load("{}/{}".format(self.config.model_dir, model_file))
 
     def __forward__(self, j): #,ngb_rating, ngb_weight, m_bias, ngb_m_bias, ngb_n_bias):
         _rating = self._rating[:, j]
@@ -46,6 +63,9 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
         _g_ngb_n_bias = np.sum(_g_l * (1 - np.sum(_ngb_weight, axis=1) / adjust_factor))
         _g_weight = adjust_rating * _adjust_g_l
         return _g_m_bias, _g_ngb_m_bias, _g_ngb_n_bias, _g_weight
+
+    def __loss__(self, rating, hat_rating):
+        return 0.5 * ma.mean(ma.power(rating  - hat_rating, 2))
 
     def __check_gradient__(self, j, g_weight, g_m_bias, g_ngb_n_bias):
 
@@ -102,6 +122,8 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
 
         self._sim[np.diag_indices(self._sim.shape[0])] = -999
 
+        self._skip_columns = np.where(self._rating.count(axis=0)==0)[0]
+
         # params
         self._neighborhood = np.argsort(self._sim, axis=1)[:, -self.config.topk:]
         self._neighborhood_idx = ([int(i/self._neighborhood.shape[1]) for i in range(self._neighborhood.size)], self._neighborhood.flatten())
@@ -111,24 +133,40 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
         else:
             self._n, self._m = rating.shape
 
-        self._weight = np.random.randn(self._m, self.config.topk)
-        self._m_bias = np.random.randn(self._m)
-        self._n_bias = np.random.randn(self._n)
+        if "_weight" not in self.__dict__:
+            self._weight = np.random.randn(self._m, self.config.topk)
+        if "_m_bias" not in self.__dict__:
+            self._m_bias = np.random.randn(self._m)
+        if "_n_bias" not in self.__dict__:
+            self._n_bias = np.random.randn(self._n)
 
-        step = 0
-        for epoch in range(self.config.epochs):
-            _epoch_loss = 0.0
-            start = time.perf_counter()
+        assert self._weight.shape[1] == self.config.topk
+        assert self._m_bias.shape[0] == self._m
+        assert self._n_bias.shape[0] == self._n
+
+        start = time.perf_counter()
+        step = self._epoch * self._n
+
+        for epoch in range(self._epoch, self.config.epochs):
+            self._epoch = epoch
 
             for j in range(self._n):
+
+                if j in self._skip_columns:
+                    continue
+
                 # forward
                 step += 1
                 _hat_rating, mid_data = self.__forward__(j)
-                _loss = 0.5 * ma.mean(ma.power(self._rating[:, j]  - _hat_rating, 2))
-                logger.debug("[{:4d} epoch\t{:.2f}s] loss:{:.2f}".format(step, time.perf_counter()-start, _loss))
+                _loss = self.__loss__(self._rating[:, j], _hat_rating)
+
+                logger.debug("[{:4d} step in {:4d} epoch\ttime:{:.2f}s] {}'s loss:{:.2f}".format(step, self._epoch, time.perf_counter()-start, j, _loss))
 
                 # backward
                 _g_m_bias, _g_ngb_m_bias, _g_ngb_n_bias, _g_weight = self.__backward__(_hat_rating, self._rating[:, j], mid_data[0], mid_data[1])
+
+                if not ma.any(_g_m_bias):
+                    continue
 
                 for i, g in zip(self._neighborhood.flat, _g_ngb_m_bias.flat):
                     if g is not ma.masked:
@@ -138,10 +176,19 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
                 if self.config.check_gradient:
                     self.__check_gradient__(j, _g_weight, _g_m_bias, _g_ngb_n_bias)
 
+                logger.debug("[gradient] max(m_bias): {}\tmax(n_bias): {}\tmax(weight):{}".format(ma.max(ma.abs(_g_m_bias)), ma.abs(_g_ngb_n_bias), ma.max(ma.abs(_g_weight))))
+
                 # update gradient
                 self._m_bias -= self.config.lr * _g_m_bias + self.config.wdecay * self._m_bias
                 self._n_bias[j] -= self.config.lr * _g_ngb_n_bias + self.config.wdecay * self._n_bias[j]
                 self._weight -= self.config.lr * _g_weight + self.config.wdecay * self._weight
+
+            logger.debug("[{:4d} epoch\ttime:{:.2f}s] epoch loss:{:.2f}".format(epoch, time.perf_counter()-start, self.__loss__(self._rating, self.__predict__())))
+            if epoch % self.config.save_per_epochs == 0:
+                self.save()
+
+        if self._epochs % self.config.save_per_epochs != 0:
+            self.save()
 
     def __predict__(self):
         hat_rating = ma.masked_all((self._m, self._n))
@@ -156,6 +203,19 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
             "n_bias": self._n_bias,
             "weight": self._weight
         }
+
+
+    def save(self):
+        logger.debug("save model: {}/{}.{}".format(self.config.model_dir, self.name, self._epoch))
+        np.savez("{}/{}.{}".format(self.config.model_dir, self.name, self._epoch), m_bias=self._m_bias, n_bias=self._n_bias, weight=self._weight)
+
+    def load(self, model_file):
+        logger.debug("load model: {}".format(model_file))
+
+        parameters = np.load(open(model_file, "rb"))
+        self._m_bias = parameters["m_bias"]
+        self._n_bias = parameters["n_bias"]
+        self._weight = parameters["weight"]
 
 
 class UserBasedRegressionModel(RegressionModelNeighborhoodBasedAlgorithm):
