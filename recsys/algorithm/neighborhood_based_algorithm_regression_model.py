@@ -188,7 +188,7 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
             if epoch % self.config.save_per_epochs == 0:
                 self.save()
 
-        if self._epochs % self.config.save_per_epochs != 0:
+        if self._epoch % self.config.save_per_epochs != 0:
             self.save()
 
     def __predict__(self):
