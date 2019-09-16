@@ -35,12 +35,12 @@ class RegressionModelNeighborhoodBasedAlgorithm(Algorithm):
             model_file = None
             self._epoch = 0
             for mfile in model_path.glob("{}.[0-9]*".format(self.name)):
-                mname, epoch = mfile.split(".")
-                if int(step) > self._epoch:
+                mname, epoch, _ = mfile.name.split(".")
+                if int(epoch) > self._epoch:
                     self._epoch = int(epoch)
                     model_file = mfile
             if model_file is not None:
-                self.load("{}/{}".format(self.config.model_dir, model_file))
+                self.load("{}/{}".format(self.config.model_dir, model_file.name))
 
     def __forward__(self, j): #,ngb_rating, ngb_weight, m_bias, ngb_m_bias, ngb_n_bias):
         _rating = self._rating[:, j]

@@ -54,7 +54,7 @@ if __name__ == "__main__":
     elif args.algo == "user_reg":
         algorithm = UserBasedRegressionModel(RegressionModelNeighborhoodBasedConfig(topk=args.topk, lr=args.learn_rate, epochs=args.epochs, wdecay=args.weight_decay, check_gradient=args.check_gradient, model_dir=args.model_dir))
     elif args.algo == "item_reg":
-        algorithm = ItemBasedRegressionModel(RegressionModelNeighborhoodBasedConfig(topk=args.topk, lr=args.learn_rate, epochs=args.epochs, wdecay=args.weight_decay, check_gradient=args.check_gradient), model_dir=args.model_dir)
+        algorithm = ItemBasedRegressionModel(RegressionModelNeighborhoodBasedConfig(topk=args.topk, lr=args.learn_rate, epochs=args.epochs, wdecay=args.weight_decay, check_gradient=args.check_gradient, model_dir=args.model_dir))
     else:
         print("[USAGE] algo must be in [user,item,user_reg,item_reg]")
         sys.exit(-1)
