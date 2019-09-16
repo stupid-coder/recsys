@@ -31,7 +31,7 @@ class UnconstrainedMatrixFactorAlgorithm(Algorithm):
     """
     def __init__(self, config):
         super().__init__("UnconstrainedMatrixFactorAlgorithm", config)
-
+        self._epoch = 0
         assert self.config.model_dir
 
         model_path = Path(self.config.model_dir)
@@ -40,7 +40,6 @@ class UnconstrainedMatrixFactorAlgorithm(Algorithm):
             model_path.mkdir()
         else:
             model_file = None
-            self._epoch = 0
             for mfile in model_path.glob("{}.[0-9]*".format(self.name)):
                 mname, epoch, _ = mfile.name.split(".")
                 if int(epoch) > self._epoch:
@@ -94,6 +93,8 @@ class UnconstrainedMatrixFactorAlgorithm(Algorithm):
             if self._epoch % self.config.save_per_epochs == 0:
                 self.save()
 
+        if self._epoch % self.config.save_per_epochs != 0:
+            self.save()
 
     def predict(self, rating):
         return self.__forward__()
